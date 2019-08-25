@@ -1,0 +1,13 @@
+[ignore]
+
+[include]
+../server/networkTypes.js
+./src
+
+[libs]
+
+[lints]
+
+[options]
+
+[strict]

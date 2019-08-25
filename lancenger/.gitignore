@@ -1,0 +1,10 @@
+# Meta
+tags
+
+# Generated files
+node_modules/
+dist/
+
+# Logs
+*.log
+*.rdb

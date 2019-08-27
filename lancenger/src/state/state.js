@@ -1,85 +1,50 @@
 // @flow
 
-import type {
-  NodeType,
-  Phase,
-  RelationshipType,
-  TokenType,
-} from '../../../server/networkTypes';
 import type { Primitive } from '../graphics/buildPrimitive';
 
 export type Position = {|
   x: number,
   y: number,
+  z: number,
 |};
 
-export type Dimensions = {|
-  width: number,
-  height: number,
-|};
-
-export type Player = {
-  id: string,
-  name: string,
-  color: string,
-};
-
-export type Players = {
-  [string]: Player,
-};
-
-export type Token = {|
-  id: string,
-  type: TokenType,
+export type Transformation = {|
   position: Position,
-  radius: number,
-  nodeId: string,
+  rotation: {
+    xAxis: number,
+    yAxis: number,
+    zAxis: number,
+  },
+  scale: number,
 |};
 
-export type Tokens = {
-  [string]: Token,
-};
-
-export type Node = {|
-  id: string,
-  type: NodeType,
-  position: Position,
-  radius: number,
-  playerIds: string[],
-  enabled: boolean,
-|};
-
-export type Nodes = {
-  [string]: Node,
-};
-
-export type Relationship = {|
-  id: string,
-  type: RelationshipType,
-  fromId: string,
-  toId: string,
-|};
-
-export type Relationships = {
-  [string]: Relationship,
-};
-
-export type Need = {|
-  id: string,
-  playerId: string,
-  type: TokenType,
-  count: number,
-|};
-
-export type Needs = {
-  [string]: Need,
-};
-
-export type Button = {
-  state: 'up' | 'down',
-  position: Position,
+export type Box = {|
+  transformation: Transformation,
   height: number,
   width: number,
+  depth: number,
+|};
+
+export type Vector = {|
+  x: number,
+  y: number,
+  z: number,
+|};
+
+export type Body = {|
+  id: number,
+  box: Box,
+  velocity: Vector,
+|};
+export type Bodies = {
+  [string]: Body,
+};
+
+export type Lance = {|
+  bodyId: string,
+|};
+export type Lances = {
+  [string]: Lance,
 };
 
 export type Primitives = {
@@ -87,33 +52,7 @@ export type Primitives = {
 };
 
 export type State = {|
-  phase: ?Phase,
-  currentTokenId: ?string,
-  players: Players,
-  tokens: Tokens,
-  nodes: Nodes,
-  relationships: Relationships,
-  needs: Needs,
-  button: Button,
+  bodies: Bodies,
+  lances: Lances,
   primitives: Primitives,
 |};
-
-export default function generateState(
-): State {
-  return {
-    phase: null,
-    currentTokenId: null,
-    players: {},
-    tokens: {},
-    nodes: {},
-    relationships: {},
-    needs: {},
-    button: {
-      state: 'up',
-      position: { x: 30, y: 65 },
-      width: 28,
-      height: 10,
-    },
-    primitives: {},
-  };
-}

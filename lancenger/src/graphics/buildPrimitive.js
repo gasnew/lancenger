@@ -1,55 +1,62 @@
 // @flow
 
+import mat4 from 'gl-mat4';
 import _ from 'lodash';
 import type { Regl } from 'regl';
 
 import { stagifyMesh } from './graphics';
 import { primitiveVertexShader, solidFragmentShader } from './shaders';
-import type { Mesh } from './meshes';
+import type { Model } from './models/index';
 
 export type Command<Props> = (Props) => void;
 export type Primitive<Props> = {|
   command: Command<Props>,
-  height: number,
-  width: number,
 |};
 
 type Props = {
   regl: Regl,
-  mesh: Mesh,
-  fragmentShader?: string,
+  model: Model,
 };
 
 export default function buildPrimitive({
   regl,
-  mesh,
-  fragmentShader = solidFragmentShader,
+  model,
 }: Props): Primitive<{}> {
-  const stagifiedMesh = stagifyMesh(mesh);
-  const meshAsCoordinates = _.flatten(mesh);
-  const xs = _.map(meshAsCoordinates, _.first);
-  const ys = _.map(meshAsCoordinates, _.last);
-  const width = _.max(xs) - _.min(xs);
-  const height = _.max(ys) - _.min(ys);
-
   return {
     command: regl({
-      frag: solidFragmentShader,
-      vert: primitiveVertexShader,
-      attributes: {
-        vertexPosition: stagifiedMesh,
-      },
-
       uniforms: {
-        color: regl.prop('color') || [1, 0, 0, 1],
-        location: regl.prop('location'),
-        stageWidth: regl.prop('width'),
-        stageHeight: regl.prop('height'),
-      },
+        model: (_, props, batchId) => {
+          // we create the model matrix by combining
+          // translation, scaling and rotation matrices.
+          console.log(props);
+          var m = mat4.identity([]);
 
-      count: stagifiedMesh.length / 2,
+          mat4.translate(m, m, props.position);
+          var s = props.scale;
+
+          if (typeof s === 'number') {
+            mat4.scale(m, m, [s, s, s]);
+          } else {
+            // else, we assume an array
+            mat4.scale(m, m, s);
+          }
+
+          if (typeof props.yRotate !== 'undefined') {
+            mat4.rotateY(m, m, props.yRotate);
+          }
+
+          return m;
+        },
+        color: regl.prop('color'),
+      },
+      attributes: {
+        position: model.positions,
+        normal: model.normals,
+      },
+      elements: model.elements,
+      cull: {
+        enable: true,
+      },
     }),
-    height,
-    width,
   };
 }

@@ -1,13 +1,11 @@
 // @flow
 
 import type { RenderContext } from '../renderContext';
-import type { Position } from '../../state/state';
+import type { Transformation } from '../../state/state';
 
 export type Renderable = {
   children: Renderable[],
-  position: Position,
+  transformation: Transformation,
   render: () => any,
-  height: number,
-  width: number,
 };
 export type Component = RenderContext => Renderable;

@@ -1,9 +1,8 @@
 // @flow
 
 export type ShaderProps = {
-  location: Array<number>,
-  height: number,
-  width: number,
+  translate: number[],
+  scale: number,
   color: string,
 };
 

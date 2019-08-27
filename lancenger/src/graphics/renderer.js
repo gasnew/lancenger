@@ -19,15 +19,39 @@ export default function render(canvas: HTMLCanvasElement) {
   });
 
   const camera = buildCamera(canvas);
+  regl.frame(({ tick, viewportWidth, viewportHeight }) => {
+    fbo.resize(viewportWidth, viewportHeight);
+
+    globalScope(() => {
+      // First we draw all geometry, and output their normals,
+      // positions and albedo colors to the G-buffer
+      outputGBuffer(() => {
+        regl.clear({
+          color: [0, 0, 0, 255],
+          depth: 1,
+        });
+
+        renderContext(regl)
+          .getRenderable(Sandscape())
+          .render();
+        //drawGeometry();
+      });
+
+      // We have a single directional light in the scene.
+      // We draw it as a full-screen pass.
+      drawDirectionalLight();
+
+      // next, we draw all point lights as spheres.
+      drawPointLights(tick);
+    });
+
+    camera.tick();
+  });
   //regl.frame(({ time }) => {
   //regl.clear({
   //color: toRGB('#BEE9E8'),
   //depth: 1,
   //});
-
-  //renderContext(regl, { x: 0, y: 0 })
-  //.getRenderable(Sandscape(), { x: 0, y: 0 })
-  //.render();
 
   var sphereMesh = buildSphereMesh(1.0, {
     segments: 16,
@@ -482,30 +506,5 @@ export default function render(canvas: HTMLCanvasElement) {
     drawPointLight(pointLights);
   };
 
-  regl.frame(({ tick, viewportWidth, viewportHeight }) => {
-    fbo.resize(viewportWidth, viewportHeight);
-
-    globalScope(() => {
-      // First we draw all geometry, and output their normals,
-      // positions and albedo colors to the G-buffer
-      outputGBuffer(() => {
-        regl.clear({
-          color: [0, 0, 0, 255],
-          depth: 1,
-        });
-
-        drawGeometry();
-      });
-
-      // We have a single directional light in the scene.
-      // We draw it as a full-screen pass.
-      drawDirectionalLight();
-
-      // next, we draw all point lights as spheres.
-      drawPointLights(tick);
-    });
-
-    camera.tick();
-  });
   //});
 }

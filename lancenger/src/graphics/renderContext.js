@@ -1,10 +1,10 @@
 // @flow
 
-import mat4 from 'gl-mat4';
 import _ from 'lodash';
-import compose from 'lodash/fp/compose';
+import flow from 'lodash/fp/flow';
 
 import buildPrimitive from './buildPrimitive';
+import { IDENTITY_MATRIX } from './graphics';
 import dispatch, { addPrimitive } from '../state/actions';
 import { getPrimitive } from '../state/getters';
 import type { Regl } from 'regl';
@@ -25,8 +25,6 @@ export type RenderContext = {
   transformMatrix: (...transformations: Array<(Matrix) => Matrix>) => Matrix,
 };
 export type RenderContextBuilder = (Regl, Matrix) => RenderContext;
-
-const IDENTITY_MATRIX = mat4.identity([]);
 
 export default function renderContext(
   regl: Regl,
@@ -76,6 +74,6 @@ export default function renderContext(
       };
     },
     transformMatrix: (...transformations) =>
-      compose(transformations)([...matrix]),
+      flow(transformations)([...matrix]),
   };
 }

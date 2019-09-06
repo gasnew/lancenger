@@ -3,9 +3,9 @@
 import mat4 from 'gl-mat4';
 import _ from 'lodash';
 
-import type { Position, Rotation } from '../state/state';
-
 export type Matrix = number[];
+
+export const IDENTITY_MATRIX: Matrix = mat4.identity([]);
 
 export function toRGB(hex: string): Array<number> {
   var result: ?Array<string> = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
@@ -19,18 +19,6 @@ export function toRGB(hex: string): Array<number> {
         1,
       ]
     : [1, 0, 0, 1];
-}
-
-export function glifyPosition(position: Position): number[] {
-  return [position.x, position.y, position.z];
-}
-
-export function glifyRotation(rotation: Rotation): number[] {
-  return [rotation.xAxis, rotation.yAxis, rotation.zAxis];
-}
-
-export function glifyScale(scale: number): number[] {
-  return [scale, scale, scale];
 }
 
 type Transform = Matrix => Matrix;

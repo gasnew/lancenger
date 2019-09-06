@@ -1,26 +1,10 @@
 // @flow
 
+import type { Matrix } from '../graphics/graphics';
 import type { Primitive } from '../graphics/buildPrimitive';
 
-export type Position = {|
-  x: number,
-  y: number,
-  z: number,
-|};
-
-export type Rotation = {|
-  xAxis: number,
-  yAxis: number,
-  zAxis: number,
-|};
-
-export type Transformation = {|
-  scale: number,
-  matrix: number[],
-|};
-
 export type Box = {|
-  transformation: Transformation,
+  matrix: Matrix,
   height: number,
   width: number,
   depth: number,
@@ -33,7 +17,7 @@ export type Vector = {|
 |};
 
 export type Body = {|
-  id: number,
+  id: string,
   box: Box,
   velocity: Vector,
 |};
@@ -42,6 +26,7 @@ export type Bodies = {
 };
 
 export type Lance = {|
+  id: string,
   bodyId: string,
 |};
 export type Lances = {

@@ -12,9 +12,9 @@ export default function Sandscape(): Component {
       getRenderable(
         Bunny(),
         transformMatrix(
+          translate([0, 50, 0]),
           scale(5 * (Math.cos(Date.now() / 500) + 1.5)),
           rotate(Date.now() / 1000, [0, 1, 0]),
-          translate([0, 50, 0])
         )
       )
     );

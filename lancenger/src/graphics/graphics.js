@@ -1,11 +1,11 @@
 // @flow
 
+import mat4 from 'gl-mat4';
 import _ from 'lodash';
 
-import type { ShaderProps } from './shaders';
-import type { Position, Transformation } from '../state/state';
+import type { Position, Rotation } from '../state/state';
 
-const screenScale = 60;
+export type Matrix = number[];
 
 export function toRGB(hex: string): Array<number> {
   var result: ?Array<string> = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
@@ -25,34 +25,40 @@ export function glifyPosition(position: Position): number[] {
   return [position.x, position.y, position.z];
 }
 
-//export function unVectorize(vector: Array<number>): Position {
-//return { x: vector[0], y: vector[1] };
-//}
+export function glifyRotation(rotation: Rotation): number[] {
+  return [rotation.xAxis, rotation.yAxis, rotation.zAxis];
+}
 
-//export function unstagify(position: Position): Position {
-//const { width } = getStageDimensions();
-//return {
-//x: (position.x / width) * screenScale,
-//y: (position.y / width) * screenScale,
-//};
-//}
+export function glifyScale(scale: number): number[] {
+  return [scale, scale, scale];
+}
 
-//export function stagifyPosition(position: Position): Position {
-//const { width } = getStageDimensions();
-//return {
-//x: (position.x * width) / screenScale,
-//y: (position.y * width) / screenScale,
-//};
-//}
+type Transform = Matrix => Matrix;
 
-//export function stagifyMesh(vector: Mesh): Array<number> {
-//const { width } = getStageDimensions();
-//return _.map(_.flattenDeep(vector), value => (value * width) / screenScale);
-//}
+export function scale(scale: number): Transform {
+  return matrix => {
+    mat4.scale(matrix, matrix, [scale, scale, scale]);
+    return matrix;
+  };
+}
 
-export function transform(
-  transformation1: Transformation,
-  transformation2: Transformation
-): Transformation {
-  return transformation2;
+export function rotate(angle: number, axis: number[]): Transform {
+  return matrix => {
+    mat4.rotate(matrix, matrix, angle, axis);
+    return matrix;
+  };
+}
+
+export function translate(translation: number[]): Transform {
+  return matrix => {
+    mat4.translate(matrix, matrix, translation);
+    return matrix;
+  };
+}
+
+export function normal(vector: number[]): number[] {
+  const magnitude = Math.sqrt(
+    Math.pow(vector[0], 2) + Math.pow(vector[1], 2) + Math.pow(vector[2], 2)
+  );
+  return _.map(vector, dimension => dimension / magnitude);
 }

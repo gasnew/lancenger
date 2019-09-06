@@ -10,7 +10,11 @@ export default function Sand(): Component {
         PrimitiveComponent({
           model: BOX,
           dynamicProps: {
-            color: [1, 0.5, 0.5],
+            color: [
+              1,
+              0.5 + 0.2 * (Math.cos(Date.now() / 100) + 1),
+              0.5 + 0.2 * (Math.cos(Date.now() / 320) + 1),
+            ],
           },
         })
       )

@@ -2,13 +2,10 @@
 
 import mat4 from 'gl-mat4';
 import buildCamera from 'canvas-orbit-camera';
-import bunny from 'bunny';
-import normals from 'angle-normals';
 import buildSphereMesh from 'primitive-sphere';
 
 import Sandscape from './components/Sandscape';
 import renderContext from './renderContext';
-import { toRGB } from './graphics';
 
 import startRegl from 'regl';
 
@@ -34,7 +31,6 @@ export default function render(canvas: HTMLCanvasElement) {
         renderContext(regl)
           .getRenderable(Sandscape())
           .render();
-        //drawGeometry();
       });
 
       // We have a single directional light in the scene.
@@ -69,80 +65,6 @@ export default function render(canvas: HTMLCanvasElement) {
     ],
     depth: true,
   });
-
-  var boxPosition = [
-    // side faces
-    [-0.5, +0.5, +0.5],
-    [+0.5, +0.5, +0.5],
-    [+0.5, -0.5, +0.5],
-    [-0.5, -0.5, +0.5], // positive z face.
-    [+0.5, +0.5, +0.5],
-    [+0.5, +0.5, -0.5],
-    [+0.5, -0.5, -0.5],
-    [+0.5, -0.5, +0.5], // positive x face
-    [+0.5, +0.5, -0.5],
-    [-0.5, +0.5, -0.5],
-    [-0.5, -0.5, -0.5],
-    [+0.5, -0.5, -0.5], // negative z face
-    [-0.5, +0.5, -0.5],
-    [-0.5, +0.5, +0.5],
-    [-0.5, -0.5, +0.5],
-    [-0.5, -0.5, -0.5], // negative x face.
-    [-0.5, +0.5, -0.5],
-    [+0.5, +0.5, -0.5],
-    [+0.5, +0.5, +0.5],
-    [-0.5, +0.5, +0.5], // top face
-    [-0.5, -0.5, -0.5],
-    [+0.5, -0.5, -0.5],
-    [+0.5, -0.5, +0.5],
-    [-0.5, -0.5, +0.5], // bottom face
-  ];
-
-  const boxElements = [
-    [2, 1, 0],
-    [2, 0, 3],
-    [6, 5, 4],
-    [6, 4, 7],
-    [10, 9, 8],
-    [10, 8, 11],
-    [14, 13, 12],
-    [14, 12, 15],
-    [18, 17, 16],
-    [18, 16, 19],
-    [20, 21, 22],
-    [23, 20, 22],
-  ];
-
-  // all the normals of a single block.
-  var boxNormal = [
-    // side faces
-    [0.0, 0.0, +1.0],
-    [0.0, 0.0, +1.0],
-    [0.0, 0.0, +1.0],
-    [0.0, 0.0, +1.0],
-    [+1.0, 0.0, 0.0],
-    [+1.0, 0.0, 0.0],
-    [+1.0, 0.0, 0.0],
-    [+1.0, 0.0, 0.0],
-    [0.0, 0.0, -1.0],
-    [0.0, 0.0, -1.0],
-    [0.0, 0.0, -1.0],
-    [0.0, 0.0, -1.0],
-    [-1.0, 0.0, 0.0],
-    [-1.0, 0.0, 0.0],
-    [-1.0, 0.0, 0.0],
-    [-1.0, 0.0, 0.0],
-    // top
-    [0.0, +1.0, 0.0],
-    [0.0, +1.0, 0.0],
-    [0.0, +1.0, 0.0],
-    [0.0, +1.0, 0.0],
-    // bottom
-    [0.0, -1.0, 0.0],
-    [0.0, -1.0, 0.0],
-    [0.0, -1.0, 0.0],
-    [0.0, -1.0, 0.0],
-  ];
 
   // The view and projection matrices of the camera are used all over the place,
   // so we put them in the global scope for easy access.
@@ -336,113 +258,6 @@ export default function render(canvas: HTMLCanvasElement) {
     // we solve this problem.
     frontFace: 'cw',
   });
-
-  function drawMesh(elements, position, normal) {
-    return regl({
-      uniforms: {
-        model: (_, props, batchId) => {
-          // we create the model matrix by combining
-          // translation, scaling and rotation matrices.
-          var m = mat4.identity([]);
-
-          mat4.translate(m, m, props.translate);
-          var s = props.scale;
-
-          if (typeof s === 'number') {
-            mat4.scale(m, m, [s, s, s]);
-          } else {
-            // else, we assume an array
-            mat4.scale(m, m, s);
-          }
-
-          if (typeof props.yRotate !== 'undefined') {
-            mat4.rotateY(m, m, props.yRotate);
-          }
-
-          return m;
-        },
-        color: regl.prop('color'),
-      },
-      attributes: {
-        position,
-        normal,
-      },
-      elements,
-      cull: {
-        enable: true,
-      },
-    });
-  }
-
-  const drawBunny = drawMesh(
-    bunny.cells,
-    bunny.positions,
-    normals(bunny.cells, bunny.positions)
-  );
-  const drawBox = drawMesh(boxElements, boxPosition, boxNormal);
-
-  var drawGeometry = () => {
-    var S = 800; // plane size
-    var T = 0.1; // plane thickness
-    var C = [0.45, 0.45, 0.45]; // plane color
-
-    //
-    // First we place out lots of bunnies.
-    //
-
-    var bunnies = [];
-    var N_BUNNIES = 5; // number of bunnies.
-
-    function negMod(x, n) {
-      // modulo that works for negative numbers
-      return ((x % n) + n) % n;
-    }
-
-    var x;
-    var z;
-
-    // There's lots of magic numbers below, and they were simply chosen because
-    // they make it looks good. There's no deeper meaning behind them.
-    for (x = -N_BUNNIES; x <= +N_BUNNIES; x++) {
-      for (z = -N_BUNNIES; z <= +N_BUNNIES; z++) {
-        // we use these two to generate pseudo-random numbers.
-        var xs = x / (N_BUNNIES + 1);
-        var zs = z / (N_BUNNIES + 1);
-
-        // pseudo-random color
-        var c = [
-          ((Math.abs(3 * x + 5 * z + 100) % 10) / 10) * 0.64,
-          ((Math.abs(64 * x + x * z + 23) % 13) / 13) * 0.67,
-          ((Math.abs(143 * x * z + x * z * z + 19) % 11) / 11) * 0.65,
-        ];
-
-        var A = S / 20; // max bunny displacement amount.
-        // compute random bunny displacement
-        var xd = (negMod(z * z * 231 + x * x * 343, 24) / 24) * 0.97 * A;
-        var zd = (negMod(z * x * 198 + x * x * z * 24, 25) / 25) * 0.987 * A;
-
-        // random bunny scale.
-        var s = ((Math.abs(3024 * z + 5239 * x + 1321) % 50) / 50) * 3.4 + 0.9;
-        // random bunny rotation
-        var r =
-          ((Math.abs(9422 * z * x + 3731 * x * x + 2321) % 200) / 200) *
-          2 *
-          Math.PI;
-
-        // translation
-        var t = [(xs * S) / 2.0 + xd, -0.2, (zs * S) / 2.0 + zd];
-
-        bunnies.push({ scale: s, translate: t, color: c, yRotate: r });
-      }
-    }
-
-    //
-    // Then we draw.
-    //
-
-    drawBunny(bunnies);
-    drawBox({ scale: [S, T, S], translate: [0.0, 0.0, 0], color: C });
-  };
 
   var drawPointLights = tick => {
     //

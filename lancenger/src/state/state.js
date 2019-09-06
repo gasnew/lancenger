@@ -8,14 +8,15 @@ export type Position = {|
   z: number,
 |};
 
+export type Rotation = {|
+  xAxis: number,
+  yAxis: number,
+  zAxis: number,
+|};
+
 export type Transformation = {|
-  position: Position,
-  rotation: {
-    xAxis: number,
-    yAxis: number,
-    zAxis: number,
-  },
   scale: number,
+  matrix: number[],
 |};
 
 export type Box = {|

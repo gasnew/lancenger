@@ -1,57 +1,41 @@
 // @flow
 
+import mat4 from 'gl-mat4';
 import _ from 'lodash';
+import compose from 'lodash/fp/compose';
 
-import { transform, glifyPosition } from './graphics';
 import buildPrimitive from './buildPrimitive';
 import dispatch, { addPrimitive } from '../state/actions';
-import { getPrimitive, getStageDimensions } from '../state/getters';
+import { getPrimitive } from '../state/getters';
 import type { Regl } from 'regl';
 import type { Component, Renderable } from './components/index';
+import type { Matrix } from './graphics';
 import type { Model } from './models/index';
-import type { Transformation } from '../state/state';
 
 type PrimitiveComponentProps<DynamicProps> = {
   model: Model,
   dynamicProps?: DynamicProps,
 };
 export type RenderContext = {
-  getRenderable: (Component, ?Transformation) => Renderable,
+  getRenderable: (Component, ?Matrix) => Renderable,
   PrimitiveComponent: <DynamicProps>(
     PrimitiveComponentProps<DynamicProps>
   ) => Component,
   render: (...renderables: Array<?Renderable>) => Renderable,
+  transformMatrix: (...transformations: Array<(Matrix) => Matrix>) => Matrix,
 };
-export type RenderContextBuilder = (Regl, Transformation) => RenderContext;
+export type RenderContextBuilder = (Regl, Matrix) => RenderContext;
 
-const TRANSFORMATION_IDENTITY: Transformation = {
-  position: {
-    x: 0,
-    y: 0,
-    z: 0,
-  },
-  rotation: {
-    xAxis: 0,
-    yAxis: 0,
-    zAxis: 0,
-  },
-  scale: 100,
-};
+const IDENTITY_MATRIX = mat4.identity([]);
 
 export default function renderContext(
   regl: Regl,
-  transformation: Transformation = TRANSFORMATION_IDENTITY
+  matrix: Matrix = IDENTITY_MATRIX
 ): RenderContext {
   return {
-    getRenderable: (component, newTransformation) =>
+    getRenderable: (component, newMatrix) =>
       component(
-        renderContext(
-          regl,
-          transform(
-            transformation,
-            newTransformation || TRANSFORMATION_IDENTITY
-          )
-        )
+        newMatrix ? renderContext(regl, newMatrix) : renderContext(regl)
       ),
     // NOTE(gnewman): I think it's a flow bug, but we have to re-annotate the
     // function type here lest the generics throw a fit and get screwed up. It
@@ -75,11 +59,10 @@ export default function renderContext(
 
       return context => ({
         children: [],
-        transformation,
+        matrix,
         render: () =>
           primitive.command({
-            scale: transformation.scale,
-            position: glifyPosition(transformation.position),
+            modelMatrix: matrix,
             ...dynamicProps,
           }),
       });
@@ -88,9 +71,11 @@ export default function renderContext(
       const realChildren = _.compact(children);
       return {
         children: realChildren,
-        transformation,
+        matrix,
         render: () => _.each(_.reverse(realChildren), child => child.render()),
       };
     },
+    transformMatrix: (...transformations) =>
+      compose(transformations)([...matrix]),
   };
 }

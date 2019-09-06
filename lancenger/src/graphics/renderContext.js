@@ -1,99 +1,79 @@
 // @flow
 
 import _ from 'lodash';
+import flow from 'lodash/fp/flow';
 
-import { stagifyPosition, transform, vectorize } from './graphics';
 import buildPrimitive from './buildPrimitive';
+import { IDENTITY_MATRIX } from './graphics';
 import dispatch, { addPrimitive } from '../state/actions';
-import { getPrimitive, getStageDimensions } from '../state/getters';
+import { getPrimitive } from '../state/getters';
 import type { Regl } from 'regl';
 import type { Component, Renderable } from './components/index';
-import type { Mesh } from './meshes';
-import type { Position } from '../state/state';
+import type { Matrix } from './graphics';
+import type { Model } from './models/index';
 
-type PrimitiveComponentProps<MeshProps, DynamicProps> = {
-  type: string,
-  buildMesh: MeshProps => Mesh,
-  meshProps: MeshProps,
+type PrimitiveComponentProps<DynamicProps> = {
+  model: Model,
   dynamicProps?: DynamicProps,
 };
 export type RenderContext = {
-  getRenderable: (Component, ?Position) => Renderable,
-  PrimitiveComponent: <MeshProps, DynamicProps>(
-    PrimitiveComponentProps<MeshProps, DynamicProps>
+  getRenderable: (Component, ?Matrix) => Renderable,
+  PrimitiveComponent: <DynamicProps>(
+    PrimitiveComponentProps<DynamicProps>
   ) => Component,
   render: (...renderables: Array<?Renderable>) => Renderable,
+  transformMatrix: (...transformations: Array<(Matrix) => Matrix>) => Matrix,
 };
-export type RenderContextBuilder = (Regl, Position) => RenderContext;
+export type RenderContextBuilder = (Regl, Matrix) => RenderContext;
 
 export default function renderContext(
   regl: Regl,
-  position: Position
+  matrix: Matrix = IDENTITY_MATRIX
 ): RenderContext {
   return {
-    getRenderable: (component, newPosition) =>
+    getRenderable: (component, newMatrix) =>
       component(
-        renderContext(regl, transform(position, newPosition || { x: 0, y: 0 }))
+        newMatrix ? renderContext(regl, newMatrix) : renderContext(regl)
       ),
     // NOTE(gnewman): I think it's a flow bug, but we have to re-annotate the
     // function type here lest the generics throw a fit and get screwed up. It
     // works this way, so I'm leaving it until further notice! :)
-    PrimitiveComponent: <MeshProps, DynamicProps>({
-      type,
-      buildMesh,
-      meshProps,
+    PrimitiveComponent: <DynamicProps>({
+      model,
       dynamicProps,
-    }: PrimitiveComponentProps<MeshProps, DynamicProps>) => {
-      const hash = JSON.stringify({ type, meshProps });
-      if (!getPrimitive(hash)) {
+    }: PrimitiveComponentProps<DynamicProps>) => {
+      if (!getPrimitive(model.name)) {
         dispatch(
           addPrimitive(
-            hash,
+            model.name,
             buildPrimitive({
               regl,
-              mesh: buildMesh(meshProps),
+              model,
             })
           )
         );
       }
-      const primitive = getPrimitive(hash);
+      const primitive = getPrimitive(model.name);
 
       return context => ({
         children: [],
-        position,
+        matrix,
         render: () =>
           primitive.command({
-            ...getStageDimensions(),
-            ...vectorize(stagifyPosition(position)),
+            modelMatrix: matrix,
             ...dynamicProps,
           }),
-        height: primitive.height,
-        width: primitive.width,
       });
     },
     render: (...children) => {
       const realChildren = _.compact(children);
-      const findWidth = renderables =>
-        _.max(
-          _.map(renderables, ({ width, position }) => position.x + width / 2)
-        ) -
-        _.min(
-          _.map(renderables, ({ width, position }) => position.x - width / 2)
-        );
-      const findHeight = renderables =>
-        _.max(
-          _.map(renderables, ({ height, position }) => position.y + height / 2)
-        ) -
-        _.min(
-          _.map(renderables, ({ height, position }) => position.y - height / 2)
-        );
       return {
         children: realChildren,
-        position,
+        matrix,
         render: () => _.each(_.reverse(realChildren), child => child.render()),
-        height: findHeight(realChildren), //height of all children together
-        width: findWidth(realChildren), //width of all children together
       };
     },
+    transformMatrix: (...transformations) =>
+      flow(transformations)([...matrix]),
   };
 }

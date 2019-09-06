@@ -1,19 +1,21 @@
 // @flow
 
-import { toRGB } from '../graphics';
-import { buildRectMesh } from '../meshes';
+import Bunny from './Bunny';
+import { rotate, scale, translate } from '../graphics';
+import Sand from './Sand';
 import type { Component } from './index';
 
 export default function Sandscape(): Component {
-  return ({ getRenderable, PrimitiveComponent, render }) =>
+  return ({ getRenderable, PrimitiveComponent, render, transformMatrix }) =>
     render(
+      getRenderable(Sand(), transformMatrix(scale(100))),
       getRenderable(
-        PrimitiveComponent({
-          type: 'Rectangle',
-          buildMesh: buildRectMesh,
-          meshProps: { height: 10, width: 10 },
-          dynamicProps: { color: toRGB('#E0D7A8') },
-        })
+        Bunny(),
+        transformMatrix(
+          translate([0, 50, 0]),
+          scale(5 * (Math.cos(Date.now() / 500) + 1.5)),
+          rotate(Date.now() / 1000, [0, 1, 0]),
+        )
       )
     );
 }

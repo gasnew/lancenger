@@ -1,13 +1,11 @@
 // @flow
 
+import mat4 from 'gl-mat4';
 import _ from 'lodash';
 
-import { getStageDimensions } from '../state/getters';
-import type { Mesh } from './meshes';
-import type { ShaderProps } from './shaders';
-import type { Position } from '../state/state';
+export type Matrix = number[];
 
-const screenScale = 60;
+export const IDENTITY_MATRIX: Matrix = mat4.identity([]);
 
 export function toRGB(hex: string): Array<number> {
   var result: ?Array<string> = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
@@ -23,38 +21,32 @@ export function toRGB(hex: string): Array<number> {
     : [1, 0, 0, 1];
 }
 
-export function vectorize(position: Position): $Shape<ShaderProps> {
-  return { location: [position.x, position.y] };
-}
+type Transform = Matrix => Matrix;
 
-export function unVectorize(vector: Array<number>): Position {
-  return { x: vector[0], y: vector[1] };
-}
-
-export function unstagify(position: Position): Position {
-  const { width } = getStageDimensions();
-  return {
-    x: (position.x / width) * screenScale,
-    y: (position.y / width) * screenScale,
+export function scale(scale: number): Transform {
+  return matrix => {
+    mat4.scale(matrix, matrix, [scale, scale, scale]);
+    return matrix;
   };
 }
 
-export function stagifyPosition(position: Position): Position {
-  const { width } = getStageDimensions();
-  return {
-    x: (position.x * width) / screenScale,
-    y: (position.y * width) / screenScale,
+export function rotate(angle: number, axis: number[]): Transform {
+  return matrix => {
+    mat4.rotate(matrix, matrix, angle, axis);
+    return matrix;
   };
 }
 
-export function stagifyMesh(vector: Mesh): Array<number> {
-  const { width } = getStageDimensions();
-  return _.map(_.flattenDeep(vector), value => (value * width) / screenScale);
+export function translate(translation: number[]): Transform {
+  return matrix => {
+    mat4.translate(matrix, matrix, translation);
+    return matrix;
+  };
 }
 
-export function transform(position1: Position, position2: Position): Position {
-  return {
-    x: position1.x + position2.x,
-    y: position1.y + position2.y,
-  };
+export function normal(vector: number[]): number[] {
+  const magnitude = Math.sqrt(
+    Math.pow(vector[0], 2) + Math.pow(vector[1], 2) + Math.pow(vector[2], 2)
+  );
+  return _.map(vector, dimension => dimension / magnitude);
 }

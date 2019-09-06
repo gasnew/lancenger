@@ -1,13 +1,11 @@
 // @flow
 
+import type { Matrix } from '../graphics';
 import type { RenderContext } from '../renderContext';
-import type { Position } from '../../state/state';
 
 export type Renderable = {
   children: Renderable[],
-  position: Position,
+  matrix: Matrix,
   render: () => any,
-  height: number,
-  width: number,
 };
 export type Component = RenderContext => Renderable;

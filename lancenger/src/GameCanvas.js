@@ -1,21 +1,32 @@
 // @flow
 
-import React from 'react';
+import fit from 'canvas-fit'
+import React, { useEffect } from 'react';
 
 import render from './graphics/renderer';
 
+const RESOLUTION_SCALE = 0.35;
+
+const fitCanvas = canvas => {
+  fit(canvas);
+  canvas.height = canvas.height * RESOLUTION_SCALE;
+  canvas.width = canvas.width * RESOLUTION_SCALE;
+}
+
 function GameCanvas() {
-  let canvasRef = React.createRef();
+  const canvasRef = React.createRef();
 
-  // $FlowFixMe: Need a way to notify this component when current is available?
-  render(canvasRef.current);
+  useEffect(() => {
+    // The component "did mount" after the DOM is initially rendered, so we can
+    // know that current is not null by this point
+    // $FlowFixMe
+    const canvas = (canvasRef.current: HTMLCanvasElement);
+    fitCanvas(canvas);
+    window.addEventListener('resize', () => fitCanvas(canvas), false);
+    render(canvas);
+  });
 
-  return (
-    <div
-      ref={canvasRef}
-      style={{ height: '770px' }}
-    />
-  );
+  return <canvas ref={canvasRef} />;
 }
 
 export default GameCanvas;

@@ -25,7 +25,7 @@ export type Vector = {|
 export type Body = {|
   id: string,
   box: Box,
-  velocity: Vector,
+  velocity: number[],
 |};
 export type Bodies = {
   [string]: Body,

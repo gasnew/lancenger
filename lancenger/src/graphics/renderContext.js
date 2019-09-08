@@ -74,6 +74,6 @@ export default function renderContext(
       };
     },
     transformMatrix: (...transformations) =>
-      flow(transformations)([...matrix]),
+      flow(transformations)(matrix),
   };
 }

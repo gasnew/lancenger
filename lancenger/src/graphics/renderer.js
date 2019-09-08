@@ -8,6 +8,11 @@ import Sandscape from './components/Sandscape';
 import processInputs from '../inputs';
 import renderContext from './renderContext';
 
+// TODO: remove these imports
+import dispatch, { transformBody } from '../state/actions';
+import { getBody, getMainLance } from '../state/getters';
+import { rotate } from './graphics';
+
 import startRegl from 'regl';
 
 export default function render(canvas: HTMLCanvasElement) {
@@ -18,6 +23,8 @@ export default function render(canvas: HTMLCanvasElement) {
 
   const camera = buildCamera(canvas);
   regl.frame(({ tick, viewportWidth, viewportHeight }) => {
+    dispatch(transformBody(getMainLance().bodyId, rotate(0.1, [0, 1, 0])));
+
     processInputs();
 
     fbo.resize(viewportWidth, viewportHeight);

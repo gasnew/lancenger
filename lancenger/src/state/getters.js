@@ -2,7 +2,7 @@
 
 import { IDENTITY_MATRIX } from '../graphics/graphics';
 import type { Primitive } from '../graphics/buildPrimitive';
-import type { Bodies, Inputs, Lances, Primitives, State } from './state';
+import type { Bodies, Body, Inputs, Lance, Lances, Primitives, State } from './state';
 
 const DEFAULT_BODIES: Bodies = {
     abc123: {
@@ -10,10 +10,10 @@ const DEFAULT_BODIES: Bodies = {
       box: {
         matrix: IDENTITY_MATRIX,
         height: 1,
-        width: 1,
-        depth: 3,
+        width: 3,
+        depth: 1,
       },
-      velocity: { x: 0, y: 0, z: 0 },
+      velocity: [0, 0, 0],
     },
 };
 
@@ -43,6 +43,26 @@ export function getState(): State {
 
 export function getInputs(): Inputs {
   return getState().inputs;
+}
+
+export function getBodies(): Bodies {
+  return getState().bodies;
+}
+
+export function getBody(bodyId: string): Body {
+  return getBodies()[bodyId];
+}
+
+export function getLances(): Lances {
+  return getState().lances;
+}
+
+export function getLance(lanceId: string): Lance {
+  return getLances()[lanceId];
+}
+
+export function getMainLance(): Lance {
+  return getLance('main');
 }
 
 export function getPrimitives(): Primitives {

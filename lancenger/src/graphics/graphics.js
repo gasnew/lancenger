@@ -21,26 +21,29 @@ export function toRGB(hex: string): Array<number> {
     : [1, 0, 0, 1];
 }
 
-type Transform = Matrix => Matrix;
+export type Transform = Matrix => Matrix;
 
 export function scale(scale: number): Transform {
   return matrix => {
-    mat4.scale(matrix, matrix, [scale, scale, scale]);
-    return matrix;
+    return mat4.scale(mat4.identity([]), matrix, [scale, scale, scale]);
   };
 }
 
 export function rotate(angle: number, axis: number[]): Transform {
   return matrix => {
-    mat4.rotate(matrix, matrix, angle, axis);
-    return matrix;
+    return mat4.rotate(mat4.identity([]), matrix, angle, axis);
   };
 }
 
 export function translate(translation: number[]): Transform {
   return matrix => {
-    mat4.translate(matrix, matrix, translation);
-    return matrix;
+    return mat4.translate(mat4.identity([]), matrix, translation);
+  };
+}
+
+export function multiply(matrixB: number[]): Transform {
+  return matrixA => {
+    return mat4.multiply(mat4.identity([]), matrixA, matrixB);
   };
 }
 

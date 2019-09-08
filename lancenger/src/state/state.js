@@ -3,6 +3,12 @@
 import type { Matrix } from '../graphics/graphics';
 import type { Primitive } from '../graphics/buildPrimitive';
 
+export type Inputs = {|
+  leftThumb: number[],
+  rightThumb: number[],
+  rightTrigger: number,
+|};
+
 export type Box = {|
   matrix: Matrix,
   height: number,
@@ -38,6 +44,7 @@ export type Primitives = {
 };
 
 export type State = {|
+  inputs: Inputs,
   bodies: Bodies,
   lances: Lances,
   primitives: Primitives,

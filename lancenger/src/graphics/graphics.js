@@ -46,7 +46,7 @@ export function translate(translation: number[]): Transform {
 
 export function normal(vector: number[]): number[] {
   const magnitude = Math.sqrt(
-    Math.pow(vector[0], 2) + Math.pow(vector[1], 2) + Math.pow(vector[2], 2)
+    _.reduce(vector, (sum, dimension) => sum + Math.pow(dimension, 2), 0)
   );
   return _.map(vector, dimension => dimension / magnitude);
 }

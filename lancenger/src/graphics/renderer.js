@@ -5,6 +5,7 @@ import buildCamera from 'canvas-orbit-camera';
 import buildSphereMesh from 'primitive-sphere';
 
 import Sandscape from './components/Sandscape';
+import processInputs from '../inputs';
 import renderContext from './renderContext';
 
 import startRegl from 'regl';
@@ -17,6 +18,8 @@ export default function render(canvas: HTMLCanvasElement) {
 
   const camera = buildCamera(canvas);
   regl.frame(({ tick, viewportWidth, viewportHeight }) => {
+    processInputs();
+
     fbo.resize(viewportWidth, viewportHeight);
 
     globalScope(() => {

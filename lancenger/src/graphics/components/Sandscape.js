@@ -13,9 +13,9 @@ export default function Sandscape(): Component {
       getRenderable(
         Bunny(),
         transformMatrix(
-          translate([0, 50, 0]),
-          scale(5 * (Math.cos(Date.now() / 500) + 1.5)),
-          multiply(getBody(getMainLance().bodyId).box.matrix)
+          multiply(getBody(getMainLance().bodyId).box.matrix),
+          scale(3),
+          rotate(Math.PI, [0, 1, 0])
         )
       )
     );

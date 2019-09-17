@@ -16,6 +16,16 @@ export type Box = {|
   depth: number,
 |};
 
+export type Force = {|
+  id: string,
+  bodyId: string,
+  position: number[],
+  vector: number[],
+|};
+export type Forces = {
+  [string]: Force,
+};
+
 export type Vector = {|
   x: number,
   y: number,
@@ -44,6 +54,8 @@ export type Primitives = {
 };
 
 export type State = {|
+  timestamp: number,
+  forces: Forces,
   inputs: Inputs,
   bodies: Bodies,
   lances: Lances,

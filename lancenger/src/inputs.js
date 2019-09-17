@@ -1,7 +1,8 @@
 // @flow
 
-import { normal } from './graphics/graphics';
-import dispatch, { setInputs } from './state/actions';
+import { multiply, rotate } from './graphics/graphics';
+import dispatch, { addForce, setInputs, transformBody } from './state/actions';
+import { getBody, getMainLance, getInputs } from './state/getters';
 
 export default function processInputs() {
   if (!navigator.getGamepads) return;
@@ -17,16 +18,19 @@ export default function processInputs() {
     })
   );
 
-  //const lanceBody = getBody(getMainLance().bodyId);
-  //dispatch(
-    //addForce({
-      //bodyId: lanceBody.id,
-      //position: lanceBody.position,
-      //vector: multiplyVector(lanceBody.matrix, [
-        //getInputs().rightTrigger,
-        //0,
-        //0,
-      //]),
-    //})
-  //);
+  const { leftThumb, rightTrigger } = getInputs();
+  // NOTE: 
+  const lanceBodyId = getMainLance().bodyId;
+
+  dispatch(transformBody(lanceBodyId)(rotate(-leftThumb[0] / 10, [0, 1, 0])));
+  if (rightTrigger === 0)
+    return;
+  const lanceBody = getBody(getMainLance().bodyId);
+  dispatch(
+    addForce(
+      lanceBody.id,
+      multiply([0, 0, 0, 1])(lanceBody.box.matrix),
+      [rightTrigger, 0, 0, 0]
+    )
+  );
 }

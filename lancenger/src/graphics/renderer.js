@@ -6,12 +6,17 @@ import buildSphereMesh from 'primitive-sphere';
 
 import Sandscape from './components/Sandscape';
 import processInputs from '../inputs';
+import applyForces from '../physics';
 import renderContext from './renderContext';
 
 // TODO: remove these imports
-import dispatch, { transformBody } from '../state/actions';
-import { getBody, getMainLance } from '../state/getters';
-import { rotate } from './graphics';
+import dispatch, {
+  clearForces,
+  setTimestamp,
+  transformBody,
+} from '../state/actions';
+import { getBody, getMainLance, getTimestamp } from '../state/getters';
+import { rotate, translate } from './graphics';
 
 import startRegl from 'regl';
 
@@ -21,11 +26,13 @@ export default function render(canvas: HTMLCanvasElement) {
     extensions: ['webgl_draw_buffers', 'oes_texture_float'],
   });
 
+  dispatch(transformBody(getMainLance().bodyId)(translate([0, 50, 0])));
   const camera = buildCamera(canvas);
-  regl.frame(({ tick, viewportWidth, viewportHeight }) => {
-    dispatch(transformBody(getMainLance().bodyId, rotate(0.1, [0, 1, 0])));
+  regl.frame(({ time, tick, viewportWidth, viewportHeight }) => {
+    dispatch(clearForces());
 
     processInputs();
+    applyForces(time - getTimestamp());
 
     fbo.resize(viewportWidth, viewportHeight);
 
@@ -52,6 +59,8 @@ export default function render(canvas: HTMLCanvasElement) {
     });
 
     camera.tick();
+
+    dispatch(setTimestamp(time));
   });
   //regl.frame(({ time }) => {
   //regl.clear({

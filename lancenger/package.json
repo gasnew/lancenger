@@ -6,7 +6,7 @@
     "@material-ui/core": "^3.9.1",
     "@material-ui/icons": "^3.0.2",
     "angle-normals": "^1.0.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "bunny": "^1.0.1",
     "canvas-fit": "^1.5.0",
     "canvas-orbit-camera": "^1.0.2",
